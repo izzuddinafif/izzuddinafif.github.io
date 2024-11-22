@@ -137,7 +137,7 @@ echo '/swapfile none swap sw 0 0' | tee -a /etc/fstab
 
 # Completion message
 echo "Setup Summary:"
-echo "- User created: $USERNAME"
+# echo "- User created: $USERNAME"
 echo "- Email for Logwatch: $EMAIL"
 echo "- Timezone: $TIMEZONE"
 echo "- Essential tools and utilities installed."
