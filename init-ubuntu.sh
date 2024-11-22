@@ -86,20 +86,20 @@ echo "Enabling automatic security updates..."
 dpkg-reconfigure -plow unattended-upgrades
 
 # Configure UFW firewall
-echo "Configuring UFW firewall..."
-ufw default deny incoming
-ufw default allow outgoing
-ufw allow OpenSSH
-ufw allow 80,443/tcp
-ufw enable
-ufw logging on
+# echo "Configuring UFW firewall..."
+# ufw default deny incoming
+# ufw default allow outgoing
+# ufw allow OpenSSH
+# ufw allow 80,443/tcp
+# ufw enable
+# ufw logging on
 
 # Secure SSH
-# echo "Securing SSH configuration..."
-# sed -i 's/^#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config
+ echo "Securing SSH configuration..."
+ sed -i 's/^#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config
 # sed -i 's/^PermitRootLogin yes/PermitRootLogin no/' /etc/ssh/sshd_config
-# echo "AllowUsers $USERNAME" >> /etc/ssh/sshd_config
-# systemctl restart sshd
+ echo "AllowUsers $USERNAME" >> /etc/ssh/sshd_config
+ systemctl restart sshd
 
 # Set up SSH key-based authentication
 echo "Setting up SSH key-based authentication..."
