@@ -33,7 +33,7 @@ unattended-upgrades ntp logwatch rsync tree certbot python3-certbot-nginx docker
 
 # Install modern and fast utilities
 echo "Installing modern utilities..."
-DEBIAN_FRONTEND=noninteractive apt install -y fastfetch ripgrep bat fzf zoxide fd-find
+DEBIAN_FRONTEND=noninteractive apt install -y ripgrep bat fzf zoxide fd-find
 
 # Install Nerd Font
 FONT_NAME="Hack"
