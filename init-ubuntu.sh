@@ -51,9 +51,9 @@ else
 fi
 
 # Create a new user and add to sudo group
-echo "Creating a new user: $USERNAME..."
-adduser "$USERNAME"
-usermod -aG sudo "$USERNAME"
+# echo "Creating a new user: $USERNAME..."
+# adduser "$USERNAME"
+# usermod -aG sudo "$USERNAME"
 
 # Set up Zsh and Oh-My-Zsh
 echo "Installing Zsh and configuring Oh-My-Zsh..."
@@ -95,11 +95,11 @@ ufw enable
 ufw logging on
 
 # Secure SSH
-echo "Securing SSH configuration..."
-sed -i 's/^#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config
-sed -i 's/^PermitRootLogin yes/PermitRootLogin no/' /etc/ssh/sshd_config
-echo "AllowUsers $USERNAME" >> /etc/ssh/sshd_config
-systemctl restart sshd
+# echo "Securing SSH configuration..."
+# sed -i 's/^#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config
+# sed -i 's/^PermitRootLogin yes/PermitRootLogin no/' /etc/ssh/sshd_config
+# echo "AllowUsers $USERNAME" >> /etc/ssh/sshd_config
+# systemctl restart sshd
 
 # Set up SSH key-based authentication
 echo "Setting up SSH key-based authentication..."
@@ -131,10 +131,10 @@ swapon /swapfile
 echo '/swapfile none swap sw 0 0' | tee -a /etc/fstab
 
 # Install and configure Netdata
-echo "Installing Netdata for system monitoring..."
-bash <(curl -Ss https://my-netdata.io/kickstart.sh)
-sed -i 's/bind to = .*/bind to = 127.0.0.1/' /etc/netdata/netdata.conf
-systemctl restart netdata
+# echo "Installing Netdata for system monitoring..."
+# bash <(curl -Ss https://my-netdata.io/kickstart.sh)
+# sed -i 's/bind to = .*/bind to = 127.0.0.1/' /etc/netdata/netdata.conf
+# systemctl restart netdata
 
 # Completion message
 echo "Setup Summary:"
@@ -143,8 +143,8 @@ echo "- Email for Logwatch: $EMAIL"
 echo "- Timezone: $TIMEZONE"
 echo "- Essential tools and utilities installed."
 echo "- Firewall (UFW) configured and enabled."
-echo "- SSH hardened with key-based authentication."
+# echo "- SSH hardened with key-based authentication."
 echo "- Swap space: $(free -h | grep Swap | awk '{print $2}')"
-echo "  Access Netdata via SSH port-forwarding:"
-echo "  ssh -i /path/to/your/private-key -L 19999:127.0.0.1:19999 $USERNAME@$PUBLIC_IP"
+# echo "  Access Netdata via SSH port-forwarding:"
+# echo "  ssh -i /path/to/your/private-key -L 19999:127.0.0.1:19999 $USERNAME@$PUBLIC_IP"
 echo "Initialization script completed successfully!"
