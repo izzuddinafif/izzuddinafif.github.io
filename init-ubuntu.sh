@@ -60,7 +60,7 @@ echo "Installing Zsh and configuring Oh-My-Zsh..."
 DEBIAN_FRONTEND=noninteractive apt install -y zsh
 chsh -s $(which zsh) $USERNAME
 
-sudo -u $USERNAME bash -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh | sudo -E bash -s -- -u $USERNAME
 
 # Install Zsh plugins and Powerlevel10k theme
 echo "Installing Zsh plugins and Powerlevel10k theme..."
