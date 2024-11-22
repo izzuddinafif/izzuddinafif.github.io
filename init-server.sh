@@ -147,6 +147,16 @@ install_hlf_dependencies() {
   log "Hyperledger Fabric dependencies installed successfully."
 }
 
+# Additional useful tools to install
+ADDITIONAL_TOOLS="tree htop vim net-tools"
+
+# Function to install additional useful tools
+install_additional_tools() {
+  log "Installing additional useful tools: ${ADDITIONAL_TOOLS}"
+  install_packages "${ADDITIONAL_TOOLS}"
+  log "Additional tools installed successfully."
+}
+
 # ==============================
 # Main Script Execution
 # ==============================
@@ -183,6 +193,9 @@ configure_docker_permissions "${TARGET_USER}"
 
 # Set up SSH access for the target user
 setup_ssh_access "${TARGET_USER}"
+
+# Install additional useful tools
+install_additional_tools
 
 # Install Hyperledger Fabric dependencies
 install_hlf_dependencies
