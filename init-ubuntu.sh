@@ -10,13 +10,13 @@ if [[ "$EUID" -ne 0 ]]; then
 fi
 
 # Check if username is provided as a parameter
-if [[ -z "$1" ]]; then
-    echo "Usage: $0 <username>"
-    exit 1
-fi
+# if [[ -z "$1" ]]; then
+#    echo "Usage: $0 <username>"
+#    exit 1
+#fi
 
 PUBLIC_IP=$(curl -s https://ifconfig.me) # Get the server's public IP
-USERNAME=$1
+USERNAME=$(whoami)
 EMAIL="izzuddinafif@gmail.com"
 TIMEZONE="Asia/Jakarta"
 
