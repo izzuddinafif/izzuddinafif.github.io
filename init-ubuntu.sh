@@ -16,7 +16,7 @@ fi
 #fi
 
 PUBLIC_IP=$(curl -s https://ifconfig.me) # Get the server's public IP
-USERNAME=$(whoami)
+USERNAME=afif
 EMAIL="izzuddinafif@gmail.com"
 TIMEZONE="Asia/Jakarta"
 
@@ -104,9 +104,8 @@ ufw logging on
 # Set up SSH key-based authentication
 echo "Setting up SSH key-based authentication..."
 mkdir -p /home/$USERNAME/.ssh
-echo "Paste your public SSH key for $USERNAME:"
-read -r PUBKEY
-echo "$PUBKEY" > /home/$USERNAME/.ssh/authorized_keys
+echo "getting public SSH key for $USERNAME..."
+curl https://github.com/izzuddinafif.keys > /home/$USERNAME/.ssh/authorized_keys
 chown -R $USERNAME:$USERNAME /home/$USERNAME/.ssh
 chmod 700 /home/$USERNAME/.ssh
 chmod 600 /home/$USERNAME/.ssh/authorized_keys
