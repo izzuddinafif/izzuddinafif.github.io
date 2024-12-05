@@ -9,16 +9,10 @@ if [[ "$EUID" -ne 0 ]]; then
     exit 1
 fi
 
-# Check if username is provided as a parameter
-# if [[ -z "$1" ]]; then
-#    echo "Usage: $0 <username>"
-#    exit 1
-#fi
-
 PUBLIC_IP=$(curl -s https://ifconfig.me) # Get the server's public IP
-USERNAME=afif
 EMAIL="izzuddinafif@gmail.com"
 TIMEZONE="Asia/Jakarta"
+USER="afif"
 
 # Update and upgrade the system
 echo "Updating and upgrading the system..."
@@ -31,7 +25,7 @@ echo "Installing essential tools..."
 DEBIAN_FRONTEND=noninteractive apt install -y curl wget git vim htop unzip build-essential net-tools ufw software-properties-common tldr neofetch tmux fail2ban rkhunter clamav sysstat glances ncdu lvm2 \
 unattended-upgrades ntp logwatch rsync tree certbot python3-certbot-nginx docker.io golang containerd nodejs python3 python3-pip python3-venv nmap tcpdump iptraf-ng iperf3 npm
 
-# Install modern and fast utilities
+# Install modern utilities
 echo "Installing modern utilities..."
 DEBIAN_FRONTEND=noninteractive apt install -y ripgrep bat fzf zoxide fd-find
 
@@ -50,31 +44,6 @@ else
     exit 1
 fi
 
-# Create a new user and add to sudo group
-# echo "Creating a new user: $USERNAME..."
-# adduser "$USERNAME"
-# usermod -aG sudo "$USERNAME"
-
-# Set up Zsh and Oh-My-Zsh
-echo "Installing Zsh and configuring Oh-My-Zsh..."
-DEBIAN_FRONTEND=noninteractive apt install -y zsh
-chsh -s $(which zsh) $USERNAME
-
-curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh | sudo -E bash -s -- -u $USERNAME
-
-# Install Zsh plugins and Powerlevel10k theme
-echo "Installing Zsh plugins and Powerlevel10k theme..."
-ZSH_CUSTOM="/home/$USERNAME/.oh-my-zsh/custom"
-sudo -u $USERNAME git clone https://github.com/zsh-users/zsh-autosuggestions $ZSH_CUSTOM/plugins/zsh-autosuggestions
-sudo -u $USERNAME git clone https://github.com/zsh-users/zsh-syntax-highlighting $ZSH_CUSTOM/plugins/zsh-syntax-highlighting
-sudo -u $USERNAME git clone https://github.com/romkatv/powerlevel10k.git $ZSH_CUSTOM/themes/powerlevel10k
-
-# Configure Zsh
-echo "Configuring Zsh..."
-sed -i 's/^ZSH_THEME=.*/ZSH_THEME="powerlevel10k\/powerlevel10k"/' /home/$USERNAME/.zshrc
-sed -i 's/^plugins=.*/plugins=(git zsh-autosuggestions zsh-syntax-highlighting)/' /home/$USERNAME/.zshrc
-chown -R $USERNAME:$USERNAME /home/$USERNAME/.oh-my-zsh
-
 # Configure locale and timezone
 echo "Configuring locale and timezone..."
 locale-gen en_US.UTF-8
@@ -86,29 +55,28 @@ echo "Enabling automatic security updates..."
 dpkg-reconfigure -plow unattended-upgrades
 
 # Configure UFW firewall
-# echo "Configuring UFW firewall..."
-# ufw default deny incoming
-# ufw default allow outgoing
-# ufw allow OpenSSH
-# ufw allow 80,443/tcp
-# ufw enable
-# ufw logging on
+echo "Configuring UFW firewall..."
+ufw default deny incoming
+ufw default allow outgoing
+ufw allow OpenSSH
+ufw allow 80,443/tcp
+ufw enable
+ufw logging on
 
 # Secure SSH
- echo "Securing SSH configuration..."
- sed -i 's/^#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config
-# sed -i 's/^PermitRootLogin yes/PermitRootLogin no/' /etc/ssh/sshd_config
- echo "AllowUsers $USERNAME" >> /etc/ssh/sshd_config
- systemctl restart sshd
+echo "Securing SSH configuration..."
+sed -i 's/^#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config
+echo "AllowUsers $USER" >> /etc/ssh/sshd_config
+systemctl restart sshd
 
 # Set up SSH key-based authentication
 echo "Setting up SSH key-based authentication..."
-mkdir -p /home/$USERNAME/.ssh
-echo "getting public SSH key for $USERNAME..."
-curl https://github.com/izzuddinafif.keys >> /home/$USERNAME/.ssh/authorized_keys
-chown -R $USERNAME:$USERNAME /home/$USERNAME/.ssh
-chmod 700 /home/$USERNAME/.ssh
-chmod 600 /home/$USERNAME/.ssh/authorized_keys
+mkdir -p /home/$USER/.ssh
+echo "getting public SSH key for $USER..."
+curl https://github.com/$USER.keys >> /home/$USER/.ssh/authorized_keys
+chown -R $USER:$USER /home/$USER/.ssh
+chmod 700 /home/$USER/.ssh
+chmod 600 /home/$USER/.ssh/authorized_keys
 
 # Configure Fail2Ban
 echo "Installing and configuring Fail2Ban..."
@@ -129,21 +97,30 @@ mkswap /swapfile
 swapon /swapfile
 echo '/swapfile none swap sw 0 0' | tee -a /etc/fstab
 
-# Install and configure Netdata
-# echo "Installing Netdata for system monitoring..."
-# bash <(curl -Ss https://my-netdata.io/kickstart.sh)
-# sed -i 's/bind to = .*/bind to = 127.0.0.1/' /etc/netdata/netdata.conf
-# systemctl restart netdata
+# Install and configure Docker
+echo "Installing and configuring Docker..."
+systemctl enable docker
+systemctl start docker
+
+# Add user to the Docker group
+echo "Adding $USER to the Docker group..."
+groupadd docker || true
+usermod -aG docker $USER
+newgrp docker <<EONG
+  echo "User $USER has been added to the docker group. Log out and back in to apply the changes."
+EONG
+
+# Install and configure Node.js
+echo "Setting up Node.js..."
+npm install -g npm@latest
+npm install -g yarn pm2
 
 # Completion message
 echo "Setup Summary:"
-# echo "- User created: $USERNAME"
+echo "- Public IP: $PUBLIC_IP"
 echo "- Email for Logwatch: $EMAIL"
 echo "- Timezone: $TIMEZONE"
 echo "- Essential tools and utilities installed."
 echo "- Firewall (UFW) configured and enabled."
-# echo "- SSH hardened with key-based authentication."
 echo "- Swap space: $(free -h | grep Swap | awk '{print $2}')"
-# echo "  Access Netdata via SSH port-forwarding:"
-# echo "  ssh -i /path/to/your/private-key -L 19999:127.0.0.1:19999 $USERNAME@$PUBLIC_IP"
 echo "Initialization script completed successfully!"
