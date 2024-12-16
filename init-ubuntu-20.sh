@@ -70,6 +70,7 @@ tar -C /usr/local -xzf go$GO_VERSION.linux-amd64.tar.gz
 rm -f go$GO_VERSION.linux-amd64.tar.gz
 echo "export PATH=\$PATH:/usr/local/go/bin" >> /etc/profile
 echo "export PATH=\$PATH:/usr/local/go/bin" >> /home/$NEW_USER/.bashrc
+su - $NEW_USER -c "source /home/$NEW_USER/.bashrc"
 go version || { echo "Go installation verification failed"; exit 1; }
 
 # Download the install-fabric.sh script
