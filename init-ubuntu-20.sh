@@ -6,7 +6,7 @@ GO_VERSION="1.23.1"
 FABRIC_VERSION="2.5.10"
 CA_VERSION="1.5.13"
 SSH_KEYS_URL="https://github.com/izzuddinafif.keys"
-FABRIC_BIN_PATH="/home/$NEW_USER/fabric-samples/bin"
+BIN_DIR="/home/$NEW_USER/bin"
 LOG_FILE="/var/log/init-ubuntu-20.log"
 export DEBIAN_FRONTEND=noninteractive
 
@@ -69,25 +69,26 @@ wget https://golang.org/dl/go$GO_VERSION.linux-amd64.tar.gz || { echo "Failed to
 tar -C /usr/local -xzf go$GO_VERSION.linux-amd64.tar.gz
 rm -f go$GO_VERSION.linux-amd64.tar.gz
 echo "export PATH=\$PATH:/usr/local/go/bin" >> /etc/profile
-source /etc/profile
 echo "export PATH=\$PATH:/usr/local/go/bin" >> /home/$NEW_USER/.bashrc
 su - $NEW_USER -c "source /home/$NEW_USER/.bashrc"
 go version || { echo "Go installation verification failed"; exit 1; }
 
-# Download the install-fabric.sh script
+# Prepare the target directory for Fabric binaries
+echo "Preparing target directory for Fabric binaries..."
+mkdir -p $BIN_DIR
+chown -R $NEW_USER:$NEW_USER $BIN_DIR
+
+# Download the install-fabric.sh script as fabricadmin
 echo "Downloading the Hyperledger Fabric install script..."
-curl -sSLO https://raw.githubusercontent.com/hyperledger/fabric/main/scripts/install-fabric.sh && chmod +x install-fabric.sh
+su - $NEW_USER -c "curl -sSLO https://raw.githubusercontent.com/hyperledger/fabric/main/scripts/install-fabric.sh && chmod +x install-fabric.sh"
 
 # Install Fabric binaries and Docker images using specific versions
 echo "Installing Hyperledger Fabric binaries and Docker images..."
-if ! ./install-fabric.sh --fabric-version $FABRIC_VERSION --ca-version $CA_VERSION binary docker; then
-    echo "Failed to install Hyperledger Fabric components" >&2
-    exit 1
-fi
+su - $NEW_USER -c "bash install-fabric.sh --fabric-version $FABRIC_VERSION --ca-version $CA_VERSION -d $BIN_DIR binary docker"
 
-# Export Fabric binaries to PATH
+# Add Fabric binaries to PATH
 echo "Exporting Fabric binaries to PATH..."
-echo "export PATH=\$PATH:$FABRIC_BIN_PATH" >> /home/$NEW_USER/.bashrc
+echo "export PATH=\$PATH:$BIN_DIR" >> /home/$NEW_USER/.bashrc
 su - $NEW_USER -c "source /home/$NEW_USER/.bashrc"
 
 # Verify installations
@@ -95,7 +96,7 @@ echo "Verifying installations..."
 docker --version || echo "Docker installation verification failed"
 docker-compose version || echo "Docker Compose installation verification failed"
 go version || echo "Go installation verification failed"
-su - $NEW_USER -c "peer version" || echo "Fabric peer CLI not found"
+su - $NEW_USER -c "$BIN_DIR/peer version" || echo "Fabric peer CLI not found"
 
 echo "=== Hyperledger Fabric setup completed successfully at $(date) ==="
 echo "User '$NEW_USER' created WITHOUT a password. Set it later with 'passwd $NEW_USER' after login."
