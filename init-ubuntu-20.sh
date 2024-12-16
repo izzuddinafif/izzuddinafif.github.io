@@ -7,7 +7,7 @@ FABRIC_VERSION="2.5.10"
 CA_VERSION="1.5.13"
 SSH_KEYS_URL="https://github.com/izzuddinafif.keys"
 FABRIC_BIN_PATH="/home/$NEW_USER/fabric-samples/bin"
-LOG_FILE="/var/log/hyperledger_fabric_setup.log"
+LOG_FILE="/var/log/init-ubuntu-20.log"
 export DEBIAN_FRONTEND=noninteractive
 
 # Start logging
@@ -69,6 +69,7 @@ wget https://golang.org/dl/go$GO_VERSION.linux-amd64.tar.gz || { echo "Failed to
 tar -C /usr/local -xzf go$GO_VERSION.linux-amd64.tar.gz
 rm -f go$GO_VERSION.linux-amd64.tar.gz
 echo "export PATH=\$PATH:/usr/local/go/bin" >> /etc/profile
+source /etc/profile
 echo "export PATH=\$PATH:/usr/local/go/bin" >> /home/$NEW_USER/.bashrc
 su - $NEW_USER -c "source /home/$NEW_USER/.bashrc"
 go version || { echo "Go installation verification failed"; exit 1; }
