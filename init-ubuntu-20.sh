@@ -6,7 +6,6 @@ GO_VERSION="1.23.1"
 FABRIC_VERSION="2.5.10"
 CA_VERSION="1.5.13"
 SSH_KEYS_URL="https://github.com/izzuddinafif.keys"
-BIN_DIR="/home/$NEW_USER/bin"
 LOG_FILE="/var/log/init-ubuntu-20.log"
 export DEBIAN_FRONTEND=noninteractive
 
@@ -69,14 +68,14 @@ wget https://golang.org/dl/go$GO_VERSION.linux-amd64.tar.gz || { echo "Failed to
 tar -C /usr/local -xzf go$GO_VERSION.linux-amd64.tar.gz
 rm -f go$GO_VERSION.linux-amd64.tar.gz
 echo "export PATH=\$PATH:/usr/local/go/bin" >> /etc/profile
+source /etc/profile
 echo "export PATH=\$PATH:/usr/local/go/bin" >> /home/$NEW_USER/.bashrc
 su - $NEW_USER -c "source /home/$NEW_USER/.bashrc"
 go version || { echo "Go installation verification failed"; exit 1; }
 
 # Prepare the target directory for Fabric binaries
 echo "Preparing target directory for Fabric binaries..."
-mkdir -p $BIN_DIR
-chown -R $NEW_USER:$NEW_USER $BIN_DIR
+cd /home/$NEW_USER
 
 # Download the install-fabric.sh script as fabricadmin
 echo "Downloading the Hyperledger Fabric install script..."
@@ -84,7 +83,7 @@ su - $NEW_USER -c "curl -sSLO https://raw.githubusercontent.com/hyperledger/fabr
 
 # Install Fabric binaries and Docker images using specific versions
 echo "Installing Hyperledger Fabric binaries and Docker images..."
-su - $NEW_USER -c "bash install-fabric.sh --fabric-version $FABRIC_VERSION --ca-version $CA_VERSION -d $BIN_DIR binary docker"
+su - $NEW_USER -c "bash install-fabric.sh --fabric-version $FABRIC_VERSION --ca-version $CA_VERSION  binary docker"
 
 # Add Fabric binaries to PATH
 echo "Exporting Fabric binaries to PATH..."
