@@ -38,20 +38,6 @@ echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.gpg] https://download.d
 apt update && apt install -y docker-ce docker-ce-cli containerd.io || { echo "Docker installation failed"; exit 1; }
 docker version || { echo "Docker installation verification failed"; exit 1; }
 
-# Install Docker Compose as a CLI Plugin for the new user
-echo "Installing Docker Compose as a CLI plugin for user '$NEW_USER'..."
-
-# Create Docker Compose CLI plugins directory
-su - "$NEW_USER" -c "
-DOCKER_CONFIG=\${DOCKER_CONFIG:-\$HOME/.docker}
-mkdir -p \$DOCKER_CONFIG/cli-plugins
-curl -SL https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-linux-x86_64 -o \$DOCKER_CONFIG/cli-plugins/docker-compose
-chmod +x \$DOCKER_CONFIG/cli-plugins/docker-compose
-"
-
-# Verify Docker Compose installation for the new user
-su - "$NEW_USER" -c "docker compose version" || { echo "Docker Compose installation verification failed"; exit 1; }
-
 # Create a new user WITHOUT setting a password, and add to Docker group
 echo "Creating new user '$NEW_USER'..."
 useradd -m -s /bin/bash "$NEW_USER"
@@ -75,6 +61,14 @@ echo "Disabling root password login for SSH..."
 sed -i 's/^PermitRootLogin yes/PermitRootLogin prohibit-password/' /etc/ssh/sshd_config
 systemctl reload sshd
 
+# Install Docker Compose as a CLI Plugin for the new user
+echo "Installing Docker Compose as a CLI plugin for user '$NEW_USER'..."
+DOCKER_CONFIG="/home/$NEW_USER/.docker"
+mkdir -p "$DOCKER_CONFIG/cli-plugins"
+curl -SL https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-linux-x86_64 -o "$DOCKER_CONFIG/cli-plugins/docker-compose"
+chmod +x "$DOCKER_CONFIG/cli-plugins/docker-compose"
+chown -R "$NEW_USER":"$NEW_USER" "$DOCKER_CONFIG"
+
 # Install Go
 echo "Installing Go..."
 wget https://golang.org/dl/go"$GO_VERSION".linux-amd64.tar.gz || { echo "Failed to download Go"; exit 1; }
@@ -84,7 +78,9 @@ echo "export PATH=\$PATH:/usr/local/go/bin" >> /etc/profile
 source /etc/profile
 echo "export PATH=\$PATH:/usr/local/go/bin" >> /home/"$NEW_USER"/.bashrc
 chown "$NEW_USER":"$NEW_USER" /home/"$NEW_USER"/.bashrc
-# Verify Go installation for the new user
+
+# Verify Go installation
+echo "Verifying Go installation..."
 su - "$NEW_USER" -c "source ~/.bashrc && go version" || { echo "Go installation verification failed"; exit 1; }
 
 # Prepare the target directory for Fabric binaries
@@ -98,33 +94,4 @@ su - "$NEW_USER" -c "curl -sSLO ${INSTALL_SCRIPT_URL} && chmod +x install-fabric
 
 # Download and install Fabric binaries and Docker images using specific versions
 echo "Installing Hyperledger Fabric binaries and Docker images..."
-su - "$NEW_USER" -c "bash install-fabric.sh --fabric-version $FABRIC_VERSION --ca-version $CA_VERSION binary docker" || { echo "Fabric installation failed"; exit 1; }
-
-# Ensure that install-fabric.sh installed binaries into BIN_DIR
-# Depending on install-fabric.sh behavior, verify and move if necessary
-echo "Verifying Fabric binaries installation..."
-if [ -d "/home/$NEW_USER/fabric-samples/bin" ]; then
-    echo "Moving Fabric binaries to $BIN_DIR..."
-    su - "$NEW_USER" -c "mv /home/$NEW_USER/fabric-samples/bin/* $BIN_DIR/" || { echo "Failed to move Fabric binaries"; exit 1; }
-fi
-
-# Add Fabric binaries to PATH
-echo "Exporting Fabric binaries to PATH..."
-echo "export PATH=\$PATH:$BIN_DIR" >> /home/"$NEW_USER"/.bashrc
-chown "$NEW_USER":"$NEW_USER" /home/"$NEW_USER"/.bashrc
-# Reload the .bashrc for the new user
-su - "$NEW_USER" -c "source ~/.bashrc"
-
-# Verify installations
-echo "Verifying installations..."
-docker --version || echo "Docker installation verification failed"
-su - "$NEW_USER" -c "docker compose version" || echo "Docker Compose installation verification failed"
-go version || echo "Go installation verification failed"
-if [ -f "$BIN_DIR/peer" ]; then
-    "$BIN_DIR/peer" version || echo "Fabric peer CLI verification failed"
-else
-    echo "Fabric peer CLI not found in $BIN_DIR"
-fi
-
-echo "=== Hyperledger Fabric setup completed successfully at $(date) ==="
-echo "User '$NEW_USER' created WITHOUT a password. Set it later with 'passwd $NEW_USER' after login."
+su - "$NEW_USER" -c "bash install-fabric.sh --fabric-version $FABRIC_VERSION --ca-version $CA_VERSION binary
