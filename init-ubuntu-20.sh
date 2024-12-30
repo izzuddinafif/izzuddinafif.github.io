@@ -94,4 +94,33 @@ su - "$NEW_USER" -c "curl -sSLO ${INSTALL_SCRIPT_URL} && chmod +x install-fabric
 
 # Download and install Fabric binaries and Docker images using specific versions
 echo "Installing Hyperledger Fabric binaries and Docker images..."
-su - "$NEW_USER" -c "bash install-fabric.sh --fabric-version $FABRIC_VERSION --ca-version $CA_VERSION binary
+su - "$NEW_USER" -c "bash install-fabric.sh --fabric-version $FABRIC_VERSION --ca-version $CA_VERSION binary docker" || { echo "Fabric installation failed"; exit 1; }
+
+# Ensure that install-fabric.sh installed binaries into BIN_DIR
+echo "Verifying Fabric binaries installation..."
+if [ -d "/home/$NEW_USER/fabric-samples/bin" ]; then
+    echo "Moving Fabric binaries to $BIN_DIR..."
+    su - "$NEW_USER" -c "mv /home/$NEW_USER/fabric-samples/bin/* $BIN_DIR/" || { echo "Failed to move Fabric binaries"; exit 1; }
+fi
+
+# Add Fabric binaries to PATH
+echo "Exporting Fabric binaries to PATH..."
+echo "export PATH=\$PATH:$BIN_DIR" >> /home/"$NEW_USER"/.bashrc
+chown "$NEW_USER":"$NEW_USER" /home/"$NEW_USER"/.bashrc
+
+# Reload the .bashrc for the new user
+su - "$NEW_USER" -c "source ~/.bashrc"
+
+# Verify installations
+echo "Verifying installations..."
+docker --version || echo "Docker installation verification failed"
+su - "$NEW_USER" -c "docker compose version" || echo "Docker Compose installation verification failed"
+go version || echo "Go installation verification failed"
+if [ -f "$BIN_DIR/peer" ]; then
+    "$BIN_DIR/peer" version || echo "Fabric peer CLI verification failed"
+else
+    echo "Fabric peer CLI not found in $BIN_DIR"
+fi
+
+echo "=== Hyperledger Fabric setup completed successfully at $(date) ==="
+echo "User '$NEW_USER' created WITHOUT a password. Set it later with 'passwd $NEW_USER' after login."
