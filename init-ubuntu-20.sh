@@ -28,7 +28,7 @@ fi
 echo "Updating and installing necessary packages..."
 apt update && apt upgrade -y
 apt install -y curl wget git unzip jq build-essential apt-transport-https \
-    ca-certificates software-properties-common sshpass || { echo "Package installation failed"; exit 1; }
+    ca-certificates software-properties-common sshpass tree || { echo "Package installation failed"; exit 1; }
 
 # Install Docker
 echo "Installing Docker..."
