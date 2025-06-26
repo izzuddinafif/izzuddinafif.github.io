@@ -18,12 +18,6 @@ exec 2>&1
 
 echo "=== Starting Hyperledger Fabric setup at $(date) ==="
 
-# Ensure the script runs on Ubuntu 20.04
-if [ "$(lsb_release -rs)" != "20.04" ]; then
-    echo "This script is designed for Ubuntu 20.04. Please use the correct OS."
-    exit 1
-fi
-
 # Update and Install necessary packages
 echo "Updating and installing necessary packages..."
 apt update && apt upgrade -y
