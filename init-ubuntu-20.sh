@@ -22,7 +22,8 @@ echo "=== Starting Hyperledger Fabric setup at $(date) ==="
 echo "Updating and installing necessary packages..."
 apt update && apt upgrade -y
 apt install -y curl wget git unzip jq build-essential apt-transport-https \
-    ca-certificates software-properties-common sshpass tree neofetch ncdu btop || { echo "Package installation failed"; exit 1; }
+    ca-certificates software-properties-common sshpass tree neofetch ncdu || { echo "Package installation failed"; exit 1; }
+snap install btop
 
 # Install Docker
 echo "Installing Docker..."
